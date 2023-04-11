@@ -33,7 +33,33 @@ object armadura {
 	method poder(personaje) = poderBase
 }
 
-object libro {}
+object bendicion {
+	method poder(personaje) = 4
+}
+
+object invisibilidad {
+	method poder(personaje) = personaje.poderBase()
+}
+
+object invocacion {
+	method poder(personaje) = self.artefactoMasPoderoso(personaje).poder(personaje)
+	method artefactoMasPoderoso(personaje) = castillo.artefactos().max({artefacto => artefacto.poder(personaje)})
+}
+
+object libro {
+	
+	const property hechizos = [bendicion,invisibilidad, invocacion]
+	 method usar(){
+	 		hechizos.remove(hechizos.first())
+	 }
+
+	method poder(personaje) {
+		if(hechizos.size() != 0){  //if (hechizos.isEmpty()) {
+	 		return   hechizos.first().poder(personaje)
+			
+		}else return 0
+	}
+}
 
 object castillo {
 	
@@ -75,4 +101,48 @@ object rolando {
 		poderBase += 1
 		artefactos.forEach({artefacto => artefacto.usar()})
 	}
+	
+	method tieneArmaFatal(enemigo) = artefactos.any({artefacto => artefacto.poder(self)>enemigo.poder()})
+	
+	method armaFatal(enemigo) = artefactos.find({artefacto => artefacto.poder(self)>enemigo.poder()})
+	
+	
+}
+
+//ENEMIGOS
+
+object palacio {}
+object fortaleza {}
+object torre {}
+
+object archibaldo {
+	method poder() = 16
+	method morada() = palacio
+}
+
+object caterina {
+	method poder() = 28
+	method morada() = fortaleza
+}
+
+object astra {
+	method poder() = 14
+	method morada() = torre
+}
+
+object eretia {
+	var property enemigos = #{archibaldo,caterina,astra}
+	
+	method enemigosVencibles(persona){
+		return enemigos.filter({enemigo => enemigo.poder()<persona.poder()})
+	}
+	
+	method moradasConquistables(persona){
+		return self.enemigosVencibles(persona).map({item => item.morada()}).asSet()
+	}
+	
+	method poderoso(persona){
+		return enemigos.all({enemigo => enemigo.poder()<persona.poder()})
+	}
+	
 }
